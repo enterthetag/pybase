@@ -1,0 +1,64 @@
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+{%- if cookiecutter.use_trio == "y" %}
+trio_mode = true
+{%- endif %}
+
+
+[tool.coverage.run]
+branch = true
+source = ["{{ cookiecutter.project_slug }}"]
+
+[tool.coverage.paths]
+source = [
+	"src/{{ cookiecutter.project_slug }}",
+	".tox/*/lib/python*/site-packages/{{ cookiecutter.project_slug }}",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+	"pragma: no cover",
+	"def __repr__",
+	"if self.debug:",
+	"if settings.DEBUG",
+	"raise AssertionError",
+	"raise NotImplementedError",
+	"raise TypeError",
+	"if 0:",
+	"if __name__ == .__main__.:",
+]
+precision = 2
+show_missing = true
+
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "test"]
+
+
+[tool.pylint.master]
+ignore = [".git", "ve", "tests"]
+jobs = 4
+persistent = true
+suggestion-mode = true
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-docstring",
+	"too-few-public-methods",
+]
+
+[tool.pylint.reports]
+output-format = "text"
+reports = false
+score = false
+
+[tool.pylint.basic]
+good-names=["ch", "fd", "id", "k", "l", "m", "n", "_"]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.miscellaneous]
+notes=["FIXME", "XXX", "TODO"]
