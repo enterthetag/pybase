@@ -24,6 +24,11 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+def include_name(name, type_, _):
+    excluded_tables = []
+    return not (type_ == "table" and name in excluded_tables)
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -40,6 +45,7 @@ def run_migrations_offline():
     context.configure(
         url=url,
         target_metadata=target_metadata,
+        include_name=include_name,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
@@ -62,7 +68,11 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_name=include_name,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
