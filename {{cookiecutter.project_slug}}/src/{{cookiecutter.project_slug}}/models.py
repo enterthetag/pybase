@@ -4,6 +4,8 @@ from sqlalchemy.schema import MetaData
 
 
 class _Base:
+    # pylint: disable=no-member,no-self-argument
+
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()

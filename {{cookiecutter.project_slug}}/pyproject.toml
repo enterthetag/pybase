@@ -37,6 +37,17 @@ profile = "black"
 src_paths = ["src", "test"]
 
 
+[tool.mypy]
+plugins = [
+{%- if cookiecutter.use_db == "y" %}
+	"sqlalchemy.ext.mypy.plugin",
+{%- endif %}
+{%- if cookiecutter.use_trio == "y" %}
+	"trio_typing.plugin",
+{%- endif %}
+]
+
+
 [tool.pylint.master]
 ignore = [".git", "ve", "tests"]
 jobs = 4

@@ -12,11 +12,13 @@ setup(
         "zope.interface>=5.0",
 {%- if cookiecutter.use_trio == "y" %}
         "trio>=0.19",
+        "trio-typing>=0.7",
 {%- endif %}
 {%- if cookiecutter.use_db == "y" %}
         "alembic>=1.7",
         "psycopg2-binary",
         "SQLAlchemy>=1.4",
+        "sqlalchemy2-stubs",
 {%- endif %}
     ],
     extras_require={
@@ -36,7 +38,6 @@ setup(
             "tox",
 {%- if cookiecutter.use_trio == "y" %}
             "pytest-trio>=0.7",
-            "trio-typing>=0.7",
 {%- endif %}
         ],
     },
