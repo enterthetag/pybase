@@ -38,7 +38,9 @@ src_paths = ["src", "test"]
 
 
 [tool.mypy]
+namespace_packages = true
 plugins = [
+	"mypy_zope:plugin",
 {%- if cookiecutter.use_db == "y" %}
 	"sqlalchemy.ext.mypy.plugin",
 {%- endif %}

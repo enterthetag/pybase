@@ -10,6 +10,7 @@ setup(
     install_requires=[
         "attrs>=20.2",
         "zope.interface>=5.0",
+        "mypy-zope>=0.3.3",
 {%- if cookiecutter.use_trio == "y" %}
         "trio>=0.19",
         "trio-typing>=0.7",
