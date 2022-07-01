@@ -9,6 +9,7 @@ trio_mode = true
 [tool.coverage.run]
 branch = true
 source = ["{{ cookiecutter.project_slug }}"]
+dynamic_context = "test_function"
 
 [tool.coverage.paths]
 source = [
