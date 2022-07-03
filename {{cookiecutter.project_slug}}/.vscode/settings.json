@@ -9,8 +9,6 @@
         }
     },
     "python.envFile": "${workspaceFolder}/.env",
-    "python.languageServer": "Pylance",
-    "python.analysis.autoImportCompletions": false,
     // Linting and formatting.
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
