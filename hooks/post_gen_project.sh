@@ -16,7 +16,7 @@ format() {
 next_steps() {
     echo
     echo "{{ cookiecutter.project_name }} is ready."
-    echo "Now, create a virtual environment and run ./scripts/bootstrap.sh"
+    echo "Now, create and activate a virtual environment, and run ./scripts/bootstrap.sh"
     echo
 }
 
