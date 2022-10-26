@@ -3,6 +3,7 @@
     "email": "victorm@marshland.es",
     "project_name": "Python Package",
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "package_name": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
     "version": "{% now 'local', '%y.%-m.0' %}",
     "use_db": "n",
     "use_trio": "n"

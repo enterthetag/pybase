@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 IGNORE_FILE=.audit-ignore
 REQUIREMENTS=requirements/requirements.txt
