@@ -7,7 +7,7 @@ end_of_line = lf
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.ada]
+[*.{ads,adb,gpr}]
 indent_size = 3
 
 [*.{tf,hcl}]
