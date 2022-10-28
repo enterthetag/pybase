@@ -2,7 +2,7 @@
 set -e
 
 WHITELIST_FILE=".license-whitelist"
-IGNORE_LIST="{{ cookiecutter.package_name }} pkg-resources"
+IGNORE_LIST="{{ cookiecutter.__package_name }} pkg-resources"
 
 if [ -s ${WHITELIST_FILE} ]
 then

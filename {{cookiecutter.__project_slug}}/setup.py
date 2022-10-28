@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="{{ cookiecutter.project_slug }}",
+    name="{{ cookiecutter.__project_slug }}",
     version="{{ cookiecutter.version }}",
     author="{{ cookiecutter.full_name }}",
     author_email="{{ cookiecutter.email }}",
