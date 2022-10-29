@@ -11,7 +11,7 @@ then
     pip install -U pip-licenses
     pip-licenses \
         --ignore-packages ${IGNORE_LIST} \
-        --allow-only="${WHITELIST}"
+        --allow-only "${WHITELIST}"
 else
     echo "${WHITELIST_FILE}: License whitelist not found, or found empty"
     exit 1
