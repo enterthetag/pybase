@@ -4,6 +4,7 @@ import copy
 import dataclasses
 import os
 import pathlib
+import re
 import shlex
 import shutil
 import subprocess
@@ -258,3 +259,57 @@ def get_dependencies(package):
         DependenciesVisitor().visit(setup)
 
     return dependencies
+
+
+def get_current_version():
+    """
+    Fetch the current package version.
+
+    We make the version available from two places:
+    - For Python code, a __version__ constant in the package top-most
+      __init__.py.
+    - For other consumers, a plain-text VERSION file.
+
+    We retrieve both, ensure they contain the exact same information, and
+    return the value.
+    """
+
+    with open("src/test_package/__init__.py") as package_init:
+        ns = {}
+        exec(package_init.read(), ns)
+        py_version = ns["__version__"]
+
+    with open("VERSION", "r") as version_file:
+        plaintext_version = version_file.read().strip()
+
+    assert py_version == plaintext_version
+
+    return py_version
+
+
+def get_bumpver_info(package):
+    """
+    Get all information BumpVer holds.
+
+    We fetch it in the form of a list of environment variables. The exact keys
+    can be found in the official documentation:
+    https://gitlab.com/mbarkhau/pycalver#command-line
+    """
+
+    result = run_cmd("bumpver", "show", "-ne", venv=package.venv)
+    output = result.stdout.decode("utf-8").strip()
+
+    return dict(line.split("=") for line in output.split("\n"))
+
+
+def get_license_year():
+    """
+    Return the copyright year from the LICENSE file.
+    """
+
+    with open("LICENSE", "r") as license_file:
+        license = license_file.read()
+
+    match = re.match(r"^Copyright \(c\) (?P<year>\d{4})", license)
+
+    return match.group("year")

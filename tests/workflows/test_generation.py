@@ -14,6 +14,7 @@ class TestPackageGeneration:
         "pyproject.toml",
         "setup.py",
         "tox.ini",
+        "VERSION",
         "requirements/requirements.txt",
         "requirements/dev.txt",
         "scripts/gen_requirements.sh",
@@ -58,6 +59,7 @@ class TestPackageGeneration:
             "extras": {
                 "dev": [
                     "bandit",
+                    "bumpver>=2021.1109",
                     "black>=22.1",
                     "coverage[toml]>=5.0",
                     "flake8",
@@ -125,6 +127,7 @@ class TestDBPackageGeneration(TestPackageGeneration):
             "extras": {
                 "dev": [
                     "bandit",
+                    "bumpver>=2021.1109",
                     "black>=22.1",
                     "coverage[toml]>=5.0",
                     "flake8",
@@ -164,6 +167,7 @@ class TestTrioPackageGeneration(TestPackageGeneration):
             "extras": {
                 "dev": [
                     "bandit",
+                    "bumpver>=2021.1109",
                     "black>=22.1",
                     "coverage[toml]>=5.0",
                     "flake8",

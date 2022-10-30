@@ -25,6 +25,7 @@ setup(
     extras_require={
         "dev": [
             "bandit",
+            "bumpver>=2021.1109",
             "black>=22.1",
             "coverage[toml]>=5.0",
             "flake8",
