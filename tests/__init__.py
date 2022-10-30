@@ -25,8 +25,16 @@ class Package:
 @contextlib.contextmanager
 def run_from(path):
     """
-    Context manager to run code from a given path. When done, go back to the
-    original working directory.
+    Context manager to run code from a given path.
+
+    When done, go back to the original working directory.
+
+    Virtually none of the functions defined in this file call this, so the
+    caller is expected to run them from a run_from() context. In practice, the
+    test suite does that for you, via an autouse fixture.
+
+    Args:
+        path (str | pathlib.Path): Path to run from.
     """
 
     original_path = pathlib.Path.cwd().resolve()
@@ -41,6 +49,23 @@ def run_cmd(cmd, *args, venv=None):
     """
     Run the given command, with the provided arguments, optionally from a
     specific virtual environment.
+
+    Runs the command using subprocess.run(), in check and capture mode: all
+    process output is stored, and it will raise on non-zero exit code.
+
+    Args:
+        cmd (str): Command to run.
+        args (list[str]): Arguments to pass to the command.
+        venv (str | pathlib.Path, optional): Virtual environment to run the
+                                             command from. Defaults to None.
+
+    Returns:
+        subprocess.CompletedProcess: The return value from subprocess.run(),
+                                     representing a process that has finished.
+
+    Raises:
+        subprocess.CalledProcessError: Exception holding the arguments, the
+                                       exit code, stdout and stderr.
     """
 
     command = shlex.join([cmd, *args])
@@ -68,6 +93,9 @@ def delete_package(package):
     """
     Delete a previously created Python package, and its associated virtual
     environment.
+
+    Args:
+        package (Package): Package to delete.
     """
 
     shutil.rmtree(package.package, ignore_errors=True)
@@ -76,8 +104,24 @@ def delete_package(package):
 
 def create_package(target, **context):
     """
-    Create a Python package from the current Cookiecutter template, create a
-    virtual environment, and bootstrap it.
+    Create a Cookiecut Python package.
+
+    Performs the following steps:
+
+    - Ensure the target is empty.
+    - Call Cookiecutter, with the provided context, to create the package.
+    - Create a virtual environment.
+    - Run the bootstrap script.
+
+    Args:
+        target (str | pathlib.Path): Directory where the package and virtual
+                                     environment will be created.
+        context (dict[str, str]): Context to provide to Cookiecutter on package
+                                  creation.
+
+    Returns:
+        Package: Structure containing the location of the package and its
+                 associated virtual environment.
     """
 
     target_loc = pathlib.Path(target).resolve()
@@ -100,16 +144,17 @@ def create_package(target, **context):
     virtualenv.create(package.venv)
 
     with run_from(package.package):
-        result = run_cmd("./scripts/bootstrap.sh", venv=package.venv)
-        print(result)
+        run_cmd("./scripts/bootstrap.sh", venv=package.venv)
 
     return package
 
 
 def gen_requirements(package):
     """
-    Generate the pinned requirements files, with pip-tools, for the given
-    Python package.
+    Generate the pinned requirements files, with pip-tools.
+
+    Args:
+        package (Package): The target package.
     """
 
     run_cmd("./scripts/gen_requirements.sh", venv=package.venv)
@@ -117,8 +162,15 @@ def gen_requirements(package):
 
 def install_dev_requirements(package):
     """
-    Install all package dependencies, from its pinned dev requirements file,
-    and the package itself, in editable mode.
+    Install all package development requirements.
+
+    Installs:
+
+    - All pinned requirements defined in requirements/dev.txt.
+    - The package itself, in editable mode.
+
+    Args:
+        package (Package): The target package.
     """
 
     run_cmd("pip-sync", "requirements/dev.txt", venv=package.venv)
@@ -127,8 +179,14 @@ def install_dev_requirements(package):
 
 def add_dependency(dependency, package):
     """
-    Given a Python package, add a new dependency to its "install_requires"
-    field in setup.py.
+    Declare a new dependency for a package.
+
+    Parses setup.py and appends a new dependency to "install_requires",
+    using a subclass of ast.NodeTransformer.
+
+    Args:
+        dependency (str): Dependency to add, following PEP-440.
+        package (Package): The target package.
     """
 
     class DependencyAdder(ast.NodeTransformer):
@@ -159,8 +217,15 @@ def add_dependency(dependency, package):
 
 def update_dependency(old, new, package):
     """
-    Given a Python package, with a dependency listed in its "install requires"
-    field in setup.py, replace it with a new version.
+    Declare an updated dependency for a package.
+
+    Parses setup.py, looks for the old dependency in "install_requires", and
+    replaces it with the new version.
+
+    Args:
+        old (str): Dependency to replace, following PEP-440.
+        new (str): Dependency to replace with, following PEP-440.
+        package (Package): The target package.
     """
 
     class DependencyUpdater(ast.NodeTransformer):
@@ -195,8 +260,18 @@ def update_dependency(old, new, package):
 
 def add_and_install_dependency(dependency, package):
     """
-    Add a new dependency to setup.py, generated the pinned requirements files,
-    and install the dev requirements.
+    Declare and install a new dependency for a package.
+
+    Performs the following steps:
+
+    - Adds the new dependency to setup.py.
+    - Regenerates the pinned requirements files, using pip-tools.
+    - Installs the pinned development requirements, and the package, in
+      editable mode.
+
+    Args:
+        dependency (str): Dependency to add, following PEP-440.
+        package (Package): The target package.
     """
 
     add_dependency(dependency, package)
@@ -206,8 +281,19 @@ def add_and_install_dependency(dependency, package):
 
 def update_and_install_dependency(old, new, package):
     """
-    Update a dependency in setup.py, then in the pinned requirements files, and
-    install the dev requirements.
+    Declare and install an updated dependency for a package.
+
+    Performs the following steps:
+
+    - Updates the dependency in setup.py.
+    - Regenerates the pinned requirements files, using pip-tools.
+    - Installs the pinned development requirements, and the package, in
+      editable mode.
+
+    Args:
+        old (str): Dependency to replace, following PEP-440.
+        new (str): Dependency to replace with, following PEP-440.
+        package (Package): The target package.
     """
 
     update_dependency(old, new, package)
@@ -216,6 +302,27 @@ def update_and_install_dependency(old, new, package):
 
 
 def get_meta(package):
+    """
+    Extract meta information from a package setup.py.
+
+    Extracts the information from the call to setup(), using a subclass of
+    ast.NodeVisitor. This roundabout way is meant to avoid the perils of
+    importing setup.py.
+
+    The keys it returns are:
+
+    - name
+    - version
+    - author
+    - author_email
+
+    Args:
+        package (Package): The target package.
+
+    Returns:
+        dict[str, str]: Information extracted from setup.py.
+    """
+
     meta = {}
 
     class MetaVisitor(ast.NodeVisitor):
@@ -233,6 +340,27 @@ def get_meta(package):
 
 
 def get_dependencies(package):
+    """
+    Extract dependency information from a package setup.py.
+
+    Extracts the dependency lists from the call to setup(), using a subclass of
+    ast.NodeVisitor. This roundabout way is meant to avoid the perils of
+    importing setup.py.
+
+    Returns a dictionary, with two keys:
+
+    - install: A list of install dependencies, in PEP-440 format.
+    - extras: A dictionary, with one key per extra. Each key points to a list,
+              containing that particular extra dependencies, in PEP-440 format.
+
+    Args:
+        package (Package): The target package.
+
+    Returns:
+        dict[list[str], dict[str, list[str]]]: Dependency information extracted
+                                               from setup.py.
+    """
+
     dependencies = {
         "install": [],
         "extras": {},
@@ -266,17 +394,22 @@ def get_current_version():
     Fetch the current package version.
 
     We make the version available from two places:
+
     - For Python code, a __version__ constant in the package top-most
       __init__.py.
     - For other consumers, a plain-text VERSION file.
 
     We retrieve both, ensure they contain the exact same information, and
     return the value.
+
+    Returns:
+        str: The current Python package version.
     """
 
     with open("src/test_package/__init__.py") as package_init:
         ns = {}
         exec(package_init.read(), ns)
+
         py_version = ns["__version__"]
 
     with open("VERSION", "r") as version_file:
@@ -294,6 +427,12 @@ def get_bumpver_info(package):
     We fetch it in the form of a list of environment variables. The exact keys
     can be found in the official documentation:
     https://gitlab.com/mbarkhau/pycalver#command-line
+
+    Args:
+        package (Package): The target package.
+
+    Returns:
+        dict[str, str]: The information extracted from BumpVer.
     """
 
     result = run_cmd("bumpver", "show", "-ne", venv=package.venv)
@@ -304,7 +443,10 @@ def get_bumpver_info(package):
 
 def get_license_year():
     """
-    Return the copyright year from the LICENSE file.
+    Read the copyright year from the LICENSE file.
+
+    Returns:
+        str: The license year.
     """
 
     with open("LICENSE", "r") as license_file:

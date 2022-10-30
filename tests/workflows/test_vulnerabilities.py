@@ -14,7 +14,7 @@ from .. import (
 def package(package):
     """
     cryptography<3.3.2 contains this vulnerability ID:
-    - cryptography<3.3.2
+
     - PYSEC-2021-63
     - CVE-2020-36242
     - GHSA-rhm9-p9w5-fwm7
@@ -27,6 +27,25 @@ def package(package):
 
 
 def test_update_vulnerable_package(package):
+    """
+    Workflow under test:
+
+    - Create a package, including a vulnerable package.
+    - Run the pip-audit script. It should fail, pointing at the vulnerability.
+    - Update the affected package to a version fixing the vulnerability.
+    - Run the pip-audit script again. It should now succeed, reporting no
+      vulnerabilities.
+
+    Keep in mind the way this workflow has been implemented differs a little
+    bit from what it would look like in practice. Since installing a vulnerable
+    package can be challenging, we force a specific version via an exact
+    version specifier in setup.py. This would not happen in reality, as the
+    vulnerable version would just be in the pinned requirements (remember using
+    exact version specifiers in setup.py tends to be frowned upon, as it can
+    complicate deployment). In any real-world setting we'd just run the
+    dependency upgrade script (scripts/update_requirements.sh), and pip-sync.
+    """
+
     with pytest.raises(subprocess.CalledProcessError) as error:
         run_cmd("./scripts/run_audit.sh", venv=package.venv)
 
@@ -48,6 +67,16 @@ def test_update_vulnerable_package(package):
 
 
 def test_ignore_vulnerable_package(package):
+    """
+    Workflow under test:
+
+    - Create a package, including a vulnerable package.
+    - Run the pip-audit script. It should fail, pointing at the vulnerability.
+    - Add the vulnerability to the whitelist of IDs to ignore.
+    - Run the pip-audit script again. It should succeed, reporting no
+      vulnerabilities.
+    """
+
     with pytest.raises(subprocess.CalledProcessError) as error:
         run_cmd("./scripts/run_audit.sh", venv=package.venv)
 

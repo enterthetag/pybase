@@ -4,6 +4,27 @@ from .. import get_dependencies, get_meta
 
 
 class TestPackageGeneration:
+    """
+    Class to encapsulate package generation checks.
+
+    It's a bit funny-looking, but there's a reason for that. They way the test
+    suite is structured, the "package" fixture, which creates a new Cookiecut
+    Python package, is function-scoped. This means each test function has its
+    very own Package, so they are free to perform, whichever workflows they
+    happen to be testing.
+
+    Package generation needs to check quite a few things. We could check them
+    in separate test functions, but that would mean a mean amount of packages
+    being created, slowing the whole things down. We could mess with different
+    fixture scopes, but that almost invariably ends up looking nasty. Instead,
+    we isolate the checks in non-test methods, and just call them, one after
+    the other, in the actual test.
+
+    A good side effect of this structure is that we can sub-class, to create
+    different package variations, and only override the checks which are
+    actually different.
+    """
+
     FILES = (
         ".editorconfig",
         ".flake8",
@@ -24,20 +45,50 @@ class TestPackageGeneration:
         "src/test_package/__init__.py",
         "tests/test_void.py",
     )
+    """
+    File list we expect the package to include.
+    """
 
     def check_files(self, package):
+        """
+        Check all the files listed in self.FILES exist, and are regular files.
+
+        Args:
+            package (Package): The package to check.
+        Raises:
+            AssertionError: If the files do not exist, or are not files.
+        """
+
         for file in self.FILES:
             file_path = package.package / file
 
             assert file_path.exists() and file_path.is_file()
 
     def check_bootstrap(self, package):
+        """
+        Check the boostrap script cleaned up after itself.
+
+        Args:
+            package (Package): The package to check.
+        Raises:
+            AssertionError: If the bootstrap script is still present.
+        """
+
         # The bootstrap script is gone after it's run.
         bootstrap_script = package.package / "scripts/bootstrap.sh"
 
         assert not bootstrap_script.exists()
 
     def check_meta(self, package):
+        """
+        Check the setup.py information matches the context provided.
+
+        Args:
+            package (Package): The package to check.
+        Raises:
+            AssertionError: If the setup.py information does not match.
+        """
+
         meta = get_meta(package)
 
         assert meta == {
@@ -48,6 +99,15 @@ class TestPackageGeneration:
         }
 
     def check_dependencies(self, package):
+        """
+        Check the setup.py dependency information matches what we expect.
+
+        Args:
+            package (Package): The package to check.
+        Raises:
+            AssertionError: If the setup.py dependencies do not match.
+        """
+
         dependencies = get_dependencies(package)
 
         assert dependencies == {
@@ -77,6 +137,16 @@ class TestPackageGeneration:
         }
 
     def check_requirements_files(self, package):
+        """
+        Check the pinned requirements files, created by pip-tools, exist and
+        are not empty.
+
+        Args:
+            package (Package): The package to check.
+        Raises:
+            AssertionError: If the files do not exist, or are empty.
+        """
+
         requirements_files = (
             package.package / "requirements/requirements.txt",
             package.package / "requirements/dev.txt",
@@ -103,15 +173,27 @@ class TestDBPackageGeneration(TestPackageGeneration):
         "alembic/versions/.gitkeep",
         "src/test_package/models.py",
     )
+    """
+    File list we expect the package to include.
+    """
 
     @pytest.fixture
     def context(self, context):
+        """
+        Create a DB-enabled package.
+        """
+
         return {
             **context,
             "use_db": "y",
         }
 
     def check_dependencies(self, package):
+        """
+        The dependency check is different, as it needs to include DB-specific
+        packages.
+        """
+
         dependencies = get_dependencies(package)
 
         assert dependencies == {
@@ -148,12 +230,21 @@ class TestDBPackageGeneration(TestPackageGeneration):
 class TestTrioPackageGeneration(TestPackageGeneration):
     @pytest.fixture
     def context(self, context):
+        """
+        Create an async-enabled package.
+        """
+
         return {
             **context,
             "use_trio": "y",
         }
 
     def check_dependencies(self, package):
+        """
+        The dependency check is different, as it needs to include Trio-specific
+        packages.
+        """
+
         dependencies = get_dependencies(package)
 
         assert dependencies == {

@@ -8,6 +8,23 @@ from .. import (
 
 
 def test_bump_version(package):
+    """
+    Workflow under test:
+
+    - Create a package, and check the version declared is what we expect.
+    - Perform a version bump.
+    - Check the new version matches what BumpVer thinks it should be.
+
+    When checking the package version, we look into all the places we've told
+    BumpVer to keep version information:
+
+    - setup.py, in the version field.
+    - src/<package_slug>/__init__.py:__version__, for Python consumers.
+    - VERSION, for non-Python consumers.
+
+    We also keep the LICENSE year updated.
+    """
+
     old_meta = get_meta(package)
     old_version = get_current_version()
     old_license_year = get_license_year()

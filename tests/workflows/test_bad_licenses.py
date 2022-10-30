@@ -19,6 +19,17 @@ def package(package):
 
 
 def test_bad_license_package(package):
+    """
+    Workflow under test:
+
+    - Create a package, including dependencies with non-whitelisted licenses.
+    - Run the license audit script, from tox, so only the install dependencies
+      are present. It should fail, reporting the non-whitelisted licenses, and
+      the packages attached to them.
+    - Add the affected licenses to the whitelist.
+    - Run the license audit script again. It should now succeed.
+    """
+
     with pytest.raises(subprocess.CalledProcessError) as error:
         run_cmd("tox", "-e", "licenses", venv=package.venv)
 
