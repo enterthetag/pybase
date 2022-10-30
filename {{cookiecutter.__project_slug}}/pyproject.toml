@@ -1,3 +1,8 @@
+[build-system]
+requires = ["setuptools >=42.0"]
+build-backend = "setuptools.build_meta"
+
+
 [tool.bumpver]
 current_version = "{{ cookiecutter.version }}"
 version_pattern = "YY.MM.PATCH[PYTAGNUM]"
