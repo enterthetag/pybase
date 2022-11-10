@@ -1,0 +1,105 @@
+# frozen_string_literal: true
+
+def pip_install(*pkgs)
+  sh 'pip', 'install', '-U', *pkgs
+end
+
+def gen_requirements(*addtl_args)
+  base_args = %w[--no-header --generate-hashes --allow-unsafe]
+  requirements_dir = 'requirements'
+  extras = %w[dev]
+
+  sh 'pip-compile', *base_args,
+     '--output-file', "#{requirements_dir}/requirements.txt", *addtl_args
+
+  extras.each do |extra|
+    sh 'pip-compile', *base_args, '--extra', extra,
+       '--output-file', "#{requirements_dir}/#{extra}.txt", *addtl_args
+  end
+end
+
+def parse_file(path, &block)
+  lines = File
+          .read(path)
+          .strip
+          .split("\n")
+
+  if block_given?
+    lines.map(&block)
+  else
+    lines
+  end
+end
+
+desc 'Bootstrap the environment'
+task :bootstrap => %w[requirements:gen requirements:refresh] do
+  File.delete('scripts/bootstrap.sh')
+end
+
+desc 'Bump the patch version of the package'
+task :bump do
+  sh 'bumpver', 'update', '--patch'
+end
+
+namespace :requirements do
+  desc 'Generate the pinned requirements files'
+  task :gen do
+    pip_install 'setuptools', 'wheel', 'pip-tools'
+    gen_requirements
+  end
+
+  desc 'Update a user-provided list of packages in the pinned requirements files'
+  task :update do |_, args|
+    update_pkgs = args.extras
+    update_args = update_pkgs
+                  .map { |pkg| ['--upgrade-package', pkg] }
+                  .flatten
+
+    gen_requirements(*update_args)
+  end
+
+  desc 'Reinstall the development pinned requirements, and the package itself'
+  task :refresh do
+    sh 'pip-sync', 'requirements/dev.txt'
+    sh 'pip', 'install', '-e', '.'
+  end
+end
+
+namespace :check do
+  desc 'Check for vulnerabilities in the pinned requirements file'
+  task :audit do
+    base_args = %w[--strict --require-hashes --skip-editable]
+    requirements_file = 'requirements/requirements.txt'
+
+    ignore_file = '.audit-ignore'
+
+    if File.exist?(ignore_file)
+      ignore_args = parse_file(ignore_file) do |ignore|
+        ['--ignore-vuln', ignore]
+      end.flatten
+
+      base_args += ignore_args
+    end
+
+    sh 'pip-audit', *base_args, '-r', requirements_file
+  end
+
+  desc 'Check the licenses of all package dependencies are in the whitelist'
+  task :licenses do
+    ignore_pkgs = %w[{{ cookiecutter.__package_name }} pkg-resources]
+    whitelist_file = '.license-whitelist'
+
+    unless File.exist?(whitelist_file) && !File.zero?(whitelist_file)
+      raise "#{whitelist_file}: License whitelist not found, or found empty"
+    end
+
+    whitelist = parse_file(whitelist_file) do |license|
+      "#{license};"
+    end.join
+
+    pip_install 'pip-licenses'
+    sh 'pip-licenses',
+       '--ignore-packages', *ignore_pkgs,
+       '--allow-only', "\"#{whitelist}\""
+  end
+end

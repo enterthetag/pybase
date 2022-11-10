@@ -33,6 +33,7 @@ class TestPackageGeneration:
         ".vscode/settings.json",
         "LICENSE",
         "pyproject.toml",
+        "Rakefile",
         "setup.py",
         "tox.ini",
         "VERSION",
