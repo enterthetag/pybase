@@ -32,7 +32,7 @@ def parse_file(path, &block)
 end
 
 desc 'Bootstrap the environment'
-task :bootstrap => %w[requirements:gen requirements:refresh] do
+task bootstrap: %w[requirements:gen requirements:refresh] do
   File.delete('scripts/bootstrap.sh')
 end
 
@@ -44,7 +44,7 @@ end
 namespace :requirements do
   desc 'Generate the pinned requirements files'
   task :gen do
-    pip_install 'setuptools', 'wheel', 'pip-tools'
+    pip_install 'setuptools', 'wheel', 'pip', 'pip-tools'
     gen_requirements
   end
 

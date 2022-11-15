@@ -10,7 +10,7 @@ insert_final_newline = true
 [*.{ads,adb,gpr}]
 indent_size = 3
 
-[*.rb]
+[*.{rb,rake}]
 indent_size = 2
 
 [Rakefile]
