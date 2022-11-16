@@ -33,6 +33,7 @@ setup(
             "hypothesis>=6.0",
             "isort>=5.0",
             "mypy>=0.920",
+            "pdbpp",
             "pip-audit",
             "pylint",
             "pytest>=6.0",
