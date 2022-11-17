@@ -10,22 +10,19 @@ insert_final_newline = true
 [*.{ads,adb,gpr}]
 indent_size = 3
 
-[*.{rb,rake}]
+[*.{rb,pp,tf,hcl,yml,yaml}]
 indent_size = 2
 
-[Rakefile]
+[{Rakefile,*.rake}]
 indent_size = 2
 
-[*.{tf,hcl}]
+[*.{json,js,jsx,ts,tsx}]
 indent_size = 2
 
-[*.{yml,yaml}]
-indent_size = 2
-
-[*.go]
+[*.{c,cpp,h,hpp,go}]
 indent_style = tab
 indent_size = unset
 
-[Makefile*]
+[{Makefile*,*.mk}]
 indent_style = tab
 indent_size = unset
