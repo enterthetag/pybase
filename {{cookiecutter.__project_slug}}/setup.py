@@ -18,8 +18,7 @@ setup(
 {%- if cookiecutter.use_db == "y" %}
         "alembic>=1.7",
         "psycopg2-binary",
-        "SQLAlchemy>=1.4",
-        "sqlalchemy2-stubs",
+        "sqlalchemy[mypy]>=2.0",
 {%- endif %}
     ],
     extras_require={

@@ -1,6 +1,12 @@
-from sqlalchemy import Column, func, types
-from sqlalchemy.orm import declarative_base, declarative_mixin, declared_attr
+from sqlalchemy import types
+from sqlalchemy.orm import (
+    declarative_base,
+    declarative_mixin,
+    declared_attr,
+    mapped_column,
+)
 from sqlalchemy.schema import MetaData
+from sqlalchemy.sql import functions
 
 
 class _Base:
@@ -27,5 +33,5 @@ Base = declarative_base(
 
 @declarative_mixin
 class Timestamped:
-    created = Column(types.DateTime, default=func.now())
-    modified = Column(types.DateTime, onupdate=func.now())
+    created = mapped_column(types.DateTime, default=functions.now())
+    modified = mapped_column(types.DateTime, onupdate=functions.now())

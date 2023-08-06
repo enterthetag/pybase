@@ -205,8 +205,7 @@ class TestDBPackageGeneration(TestPackageGeneration):
                 "mypy-zope>=0.3.3",
                 "alembic>=1.7",
                 "psycopg2-binary",
-                "SQLAlchemy>=1.4",
-                "sqlalchemy2-stubs",
+                "sqlalchemy[mypy]>=2.0",
             ],
             "extras": {
                 "dev": [
