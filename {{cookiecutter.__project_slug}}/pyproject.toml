@@ -81,6 +81,10 @@ plugins = [
 {%- endif %}
 ]
 
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
 
 [tool.pylint.master]
 ignore = [".git", "ve", "tests"]
@@ -107,3 +111,7 @@ max-line-length = 88
 
 [tool.pylint.miscellaneous]
 notes=["FIXME", "XXX", "TODO"]
+
+
+[tool.bandit]
+skips = ["B101"]
