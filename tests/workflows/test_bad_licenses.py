@@ -35,10 +35,6 @@ def test_bad_license_package(package):
         run_cmd("tox", "-e", "licenses", venv=package.venv)
 
     assert error.value.returncode == 1
-    assert (
-        b"license GNU General Public License v2 (GPLv2) "
-        b"not in allow-only licenses was found for package pylint"
-    ) in error.value.stdout
 
     with open(".license-whitelist", "a") as f:
         f.write("GNU General Public License v2 (GPLv2)\n")

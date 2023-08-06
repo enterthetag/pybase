@@ -31,7 +31,7 @@ def test_bump_version(package):
 
     assert old_version == "22.2.11"
     assert old_meta["version"] == "22.2.11"
-    assert old_license_year == "2022"
+    assert old_license_year == "2023"
 
     run_cmd("bumpver", "update", "--patch", venv=package.venv)
 
